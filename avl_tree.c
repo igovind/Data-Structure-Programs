@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #define FALSE 0
 #define TRUE 1
+
+//NEw update
 //defining node 
 struct node{
 struct node *lchild;
@@ -9,6 +11,8 @@ int info;
 struct node *rchild;
 int balance;
 };
+
+
 //declaring functions 
 void inorder(struct node *ptr);
 struct node *rotate_right(struct node *pptr);
@@ -23,12 +27,14 @@ struct node *del_left_check(struct node *pptr,int pshorter);
 struct node *del_right_check(struct node *pptr,int pshorter);
 struct node *del_left_balance(struct node *pptr);
 struct node *del_right_balance(struct node *pptr);
+
+
 int main(){
-    printf("AVL TREE\n\n\n");
+    
     int choice,key;
     struct node *root=NULL;
     while(1){
-        printf("\n\n");
+        printf("AVL TREE\n\n");
         printf(" 1.INSERT\n");
         printf(" 2.TEST INSERT\n");
         printf(" 3.DELETE\n");
@@ -63,8 +69,14 @@ int main(){
     }
     return 0;
 }
-// void inorder(struct node *ptr){}
-// struct node *rotate_right(struct node *pptr){}
+
+ struct node *rotate_right(struct node *pptr){
+    struct node *aptr;
+    aptr=pptr->lchild;
+    pptr->lchild=aptr->rchild;
+    aptr->rchild=pptr;
+    return aptr;
+ }
 // struct node *rotate_left(struct node *pptr){}
 // struct node *insert(struct node *pptr,int data){}
 // struct node *insert_left_check(struct node *pptr,int ptaller){}
