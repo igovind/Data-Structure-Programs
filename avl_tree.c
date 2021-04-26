@@ -3,8 +3,6 @@
 #define FALSE 0
 #define TRUE 1
 
-//NEw update
-//defining node
 struct node
 {
     struct node *lchild;
@@ -23,10 +21,10 @@ struct node *insert_right_check(struct node *pptr, int *ptaller);
 struct node *insert_left_balance(struct node *pptr);
 struct node *insert_right_balance(struct node *pptr);
 struct node *del(struct node *pptr, int data);
-struct node *del_left_check(struct node *pptr, int pshorter);
-struct node *del_right_check(struct node *pptr, int pshorter);
-struct node *del_left_balance(struct node *pptr);
-struct node *del_right_balance(struct node *pptr);
+struct node *del_left_check(struct node *pptr, int *pshorter);
+struct node *del_right_check(struct node *pptr, int *pshorter);
+struct node *del_left_balance(struct node *pptr, int *pshorter);
+struct node *del_right_balance(struct node *pptr, int *pshorter);
 void print_tree(struct node *ptr);
 int main()
 {
@@ -66,6 +64,9 @@ int main()
             break;
         case 3:
             printf("del\n");
+             printf("Enter data\n");
+            scanf("%d", &key);
+            root = del(root, key);
             break;
         case 4:
             printf("print\n");
@@ -242,8 +243,172 @@ void print_tree(struct node *ptr)
     printf("%d  ", ptr->info);
     print_tree(ptr->rchild);
 }
-// struct node *del(struct node *pptr,int data){}
-// struct node *del_left_check(struct node *pptr,int pshorter){}
-// struct node *del_right_check(struct node *pptr,int pshorter){}
-// struct node *del_left_balance(struct node *pptr){}
-// struct node *del_right_balance(struct node *pptr){}
+struct node *del(struct node *pptr, int data)
+{
+    static int shorter;
+    struct node *succ, *tmp;
+    if (pptr == NULL)
+    {
+        printf("Key is not present");
+        shorter = FALSE;
+        return pptr;
+    }
+    if (data < pptr->info)
+    {
+        pptr->lchild = del(pptr->lchild, data);
+        if (shorter == TRUE)
+            pptr = del_left_check(pptr, &shorter);
+    }
+    else if (data > pptr->info)
+    {
+        pptr->rchild = del(pptr->rchild, data);
+        if (shorter == TRUE)
+            pptr = del_right_check(pptr, &shorter);
+    }
+    else
+    {
+        if (pptr->lchild != NULL && pptr->rchild != NULL)
+        {
+            succ = pptr->rchild;
+            while (succ->lchild != NULL)
+                succ = succ->lchild;
+            pptr->info = succ->info;
+            pptr->rchild = del(pptr->rchild, succ->info);
+            if (shorter ==TRUE)
+                pptr = del_right_check(pptr, &shorter);
+        }
+        else
+        {
+            tmp = pptr;
+            if (pptr->lchild != NULL)
+                pptr = pptr->lchild;
+            else if (pptr->rchild != NULL)
+                pptr = pptr->rchild;
+            else
+                pptr = NULL;
+            free(tmp);
+            shorter = TRUE;
+        }
+    }
+    return pptr;
+}
+struct node *del_left_check(struct node *pptr, int *pshorter)
+{
+    switch (pptr->balance)
+    {
+    case 0:
+        pptr->balance = -1;
+        *pshorter = FALSE;
+        break;
+    case 1:
+        pptr->balance = 0;
+        break;
+    case -1:
+        pptr = del_right_balance(pptr, pshorter);
+        break;
+    default:
+        break;
+    }
+    return pptr;
+}
+struct node *del_right_check(struct node *pptr, int *pshorter)
+{
+    switch (pptr->balance)
+    {
+    case 0:
+        pptr->balance = 1;
+        *pshorter = FALSE;
+        break;
+    case -1:
+        pptr->balance = 0;
+        break;
+    case 1:
+        pptr = del_left_balance(pptr, pshorter);
+        break;
+    default:
+        break;
+    }
+    return pptr;
+}
+struct node *del_left_balance(struct node *pptr, int *pshorter)
+{
+    struct node* aptr,*bptr;
+    aptr=pptr->lchild;
+    if(aptr->balance==0){
+        pptr->balance=1;
+        aptr->balance=-1;
+        pptr=rotate_right(pptr);
+        *pshorter=FALSE;
+    }
+    else if(pptr->balance==1){
+        pptr->balance=0;
+        aptr->balance=0;
+        pptr=rotate_right(pptr);
+    }
+    else{
+        bptr=aptr->rchild;
+        switch (bptr->balance)
+        {
+        case 0:
+            pptr->balance=0;
+            aptr->balance=0;
+            break;
+        case 1:
+            pptr->balance=-1;
+            aptr->balance=0;
+            break;
+        case -1:
+            pptr->balance=0;
+            aptr->balance=1;
+            break;
+        default:
+            break;
+        }
+        bptr->balance=0;
+        pptr->lchild=rotate_left(aptr);
+        pptr=rotate_right(pptr);
+    }
+    return pptr;
+}
+struct node *del_right_balance(struct node *pptr, int *pshorter)
+{
+    struct node *aptr, *bptr;
+    aptr = pptr->rchild;
+    if (aptr->balance == 0)
+    {
+        pptr->balance = -1;
+        aptr->balance = 1;
+        *pshorter = FALSE;
+        pptr = rotate_left(pptr);
+    }
+    else if (aptr->balance == -1)
+    {
+        pptr->balance = 0;
+        aptr->balance = 0;
+        pptr = rotate_left(pptr);
+    }
+    else
+    {
+        bptr = aptr->lchild;
+        switch (bptr->balance)
+        {
+        case 0:
+            aptr->balance = 0;
+            pptr->balance = 0;
+            break;
+        case 1:
+            aptr->balance = -1;
+            pptr->balance = 0;
+            break;
+        case -1:
+            pptr->balance = 1;
+            aptr->balance = 0;
+        default:
+            break;
+        }
+        bptr->balance = 0;
+        pptr->rchild = rotate_right(aptr);
+        pptr = rotate_left(pptr);
+    }
+    return pptr;
+}
